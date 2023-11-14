@@ -8,6 +8,7 @@ use std::{
 
 use anyhow::Context;
 use bytes::Bytes;
+use futures::AsyncWriteExt;
 use h3_webtransport::server::WebTransportSession;
 use http::Method;
 use quinn::{Endpoint, ServerConfig, TransportConfig};
@@ -163,12 +164,19 @@ async fn handle_session(
     remote_addr: SocketAddr,
 ) -> anyhow::Result<()> {
     let mut log_tick = tokio::time::interval(Duration::from_secs(10));
+    let stream = spawn_uni_stream(&session).await?;
     loop {
         tokio::select! {
             Ok(datagram) = session.accept_datagram() => {
                 tracing::debug!("Received datagram: {:?}", datagram);
                 if let Some((_session_id, data)) = datagram {
-                    // just send the data back
+                    // send the data back over stream
+                    // Note:
+                    //  in real network we should handle framing of the data, on localhost we don't really have to
+                    //  worry about any bufferring so what we send is what we receive
+                    stream.send_async(data.clone()).await?;
+
+                    // send the data back
                     if let Err(e) = session.send_datagram(data) {
                         tracing::error!("Failed to send datagram: {:?}", e);
                     }
@@ -183,6 +191,32 @@ async fn handle_session(
             }
         }
     }
+}
+
+async fn spawn_uni_stream(
+    session: &WebTransportSession<h3_quinn::Connection, Bytes>,
+) -> anyhow::Result<flume::Sender<Bytes>> {
+    let (tx, rx) = flume::unbounded::<Bytes>();
+    let mut stream = session.open_uni(session.session_id()).await?;
+    tokio::spawn(async move {
+        loop {
+            match rx.recv_async().await {
+                Ok(data) => {
+                    if let Err(e) = stream.write_all(data.as_ref()).await {
+                        tracing::error!("Failed to write to stream: {:?}", e);
+                        break;
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Failed to receive data: {:?}", e);
+                    break;
+                }
+            }
+        }
+        anyhow::Ok(())
+    });
+
+    Ok(tx)
 }
 
 #[tokio::main]

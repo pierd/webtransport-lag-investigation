@@ -7,6 +7,8 @@ export function initUI(id) {
         <button id="minus" style="visibility: hidden">-</button>
         <p>Datagram latency: <span id="latency"></span></p>
         <p>Write latency: <span id="write"></span></p>
+        <p>Stream latency: <span id="stream"></span></p>
+        <p style="color: red; font-weight: bold"><span id="error"></span></p>
     `;
 
     document.getElementById("plus").addEventListener("click", () => {
@@ -29,8 +31,10 @@ function createReportInSpan(spanId) {
             span.textContent = "" + val + "ms";
         } else if (val instanceof Error) {
             span.textContent = val.message;
+            reportError(val);
         } else {
             span.textContent = val;
+            reportError(val);
         }
     };
 }
@@ -38,6 +42,15 @@ function createReportInSpan(spanId) {
 export const reportFrameTime = createReportInSpan("frame");
 export const reportLatency = createReportInSpan("latency");
 export const reportWriteTime = createReportInSpan("write");
+export const reportStream = createReportInSpan("stream");
+export function reportError(e) {
+    const span = document.getElementById("error");
+    if (e instanceof Error) {
+        span.textContent = e.message;
+    } else {
+        span.textContent = e;
+    }
+} 
 
 export function busyWait(durationMs) {
     if (waitDurationMs === null) {
@@ -76,15 +89,16 @@ export function writePacket(writer) {
     });
 }
 
-export function createReaderCallback(reader) {
+export function createReaderCallback(reader, reportCallback) {
+    const report = reportCallback || reportLatency;
     const callback = () => {
         reader.read().then(({ value, done }) => {
             const now = shortNow();
             const timestamp = timestampFromBuffer(value);
-            reportLatency(now - timestamp);
+            report(now - timestamp);
             callback();
         }, (e) => {
-            reportLatency(e);
+            report(e);
         });
     }
     return callback;

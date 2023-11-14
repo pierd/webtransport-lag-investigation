@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 bytes = { version = "1.5.0", features = ["serde"] }
-quinn = "0.10"
+futures = { version = "0.3", default-features = false, features = ["std"] }
+flume = { version = "0.11", features = ["async"] }
 parking_lot = { version = "0.12", features = ["serde"] }
+quinn = "0.10"
 rustls = { version = "0.21", features = ["quic"] }
 rustls-native-certs = { version = "0.6.2" }
 rustls-pemfile = "1.0"

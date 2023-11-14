@@ -17,10 +17,18 @@ const animationFrameCallback = () => {
 
 export async function run() {
     common.initUI();
-    let w = new WebTransport("https://127.0.0.1:9000")
-    await w.ready;
-
-    writer = w.datagrams.writable.getWriter();
     animationFrameCallback();
-    common.createReaderCallback(w.datagrams.readable.getReader())();
+
+    try {
+        let w = new WebTransport("https://127.0.0.1:9000")
+        await w.ready;
+
+        writer = w.datagrams.writable.getWriter();
+        common.createReaderCallback(w.datagrams.readable.getReader())();
+        w.incomingUnidirectionalStreams.getReader().read().then(({ value, done }) => {
+            common.createReaderCallback(value.getReader(), common.reportStream)();
+        });
+    } catch (e) {
+        common.reportError(e);
+    }
 }

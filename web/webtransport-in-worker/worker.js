@@ -2,21 +2,30 @@ import * as common from "/common.js";
 
 var writer = null;
 
-function reportWriteTime(writeData) {
-    postMessage({ write: writeData });
+function reportWriteTime(write) {
+    postMessage({ write });
 }
 
 function reportDatagram(data) { 
-    postMessage({ data: data });
+    postMessage({ data });
 }
 
-function createReaderCallback(reader) {
+function reportStream(data) { 
+    postMessage({ stream: data });
+}
+
+function reportError(error) {
+    postMessage({ error });
+}
+
+function createReaderCallback(reader, reportCallback) {
+    const report = reportCallback || reportDatagram;
     const callback = () => {
         reader.read().then(({ value, done }) => {
-            reportDatagram(value);
+            report(value);
             callback();
         }, (e) => {
-            reportDatagram(e.message);
+            report(e.message);
         });
     }
     return callback;
@@ -39,6 +48,11 @@ let w = new WebTransport("https://127.0.0.1:9000");
 w.ready.then(() => {
     writer = w.datagrams.writable.getWriter();
     createReaderCallback(w.datagrams.readable.getReader())();
+    w.incomingUnidirectionalStreams.getReader().read().then(({ value, done }) => {
+        createReaderCallback(value.getReader(), reportStream)();
+    });
+}, (e) => {
+    reportError(e.message);
 });
 
 console.info("Worker started");
