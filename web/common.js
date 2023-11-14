@@ -1,9 +1,25 @@
+var waitDurationMs = null;
+
 export function initUI(id) {
     document.getElementById(id || "components").innerHTML = `
         <p>Frame time: <span id="frame"></span></p>
+        <button id="plus" style="visibility: hidden">+</button>
+        <button id="minus" style="visibility: hidden">-</button>
         <p>Datagram latency: <span id="latency"></span></p>
         <p>Write latency: <span id="write"></span></p>
     `;
+
+    document.getElementById("plus").addEventListener("click", () => {
+        if (waitDurationMs !== null) {
+            waitDurationMs += 10;
+        }
+    });
+
+    document.getElementById("minus").addEventListener("click", () => {
+        if (waitDurationMs !== null && waitDurationMs >= 10) {
+            waitDurationMs -= 10;
+        }
+    });
 }
 
 function createReportInSpan(spanId) {
@@ -24,8 +40,13 @@ export const reportLatency = createReportInSpan("latency");
 export const reportWriteTime = createReportInSpan("write");
 
 export function busyWait(durationMs) {
+    if (waitDurationMs === null) {
+        waitDurationMs = durationMs;
+        document.getElementById("plus").style.visibility = "visible";
+        document.getElementById("minus").style.visibility = "visible";
+    }
     const startTime = Date.now();
-    while (Date.now() < startTime + durationMs) { }
+    while (Date.now() < startTime + waitDurationMs) { }
 }
 
 export function shortNow() {

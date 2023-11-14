@@ -10,25 +10,13 @@ function reportDatagram(data) {
     postMessage({ data: data });
 }
 
-function writePacket(writer) {
-    const now = common.shortNow();
-    writer.write(common.nowAsBuffer()).then(() => {
-        reportWriteTime(common.shortNow() - now);
-    }, (e) => {
-        reportWriteTime(e.message);
-    });
-}
-
-const reportLatency = reportDatagram;
 function createReaderCallback(reader) {
     const callback = () => {
         reader.read().then(({ value, done }) => {
-            const now = common.shortNow();
-            const timestamp = common.timestampFromBuffer(value);
-            reportLatency(now - timestamp);
+            reportDatagram(value);
             callback();
         }, (e) => {
-            reportLatency(e.message);
+            reportDatagram(e.message);
         });
     }
     return callback;
@@ -36,7 +24,12 @@ function createReaderCallback(reader) {
 
 onmessage = function (e) {
     if (writer !== null) {
-        writePacket(writer);
+        const now = common.shortNow();
+        writer.write(e.data).then(() => {
+            reportWriteTime(common.shortNow() - now);
+        }, (e) => {
+            reportWriteTime(e.message);
+        });
     } else {
         console.error("Got data but no stream is available");
     }
@@ -48,4 +41,4 @@ w.ready.then(() => {
     createReaderCallback(w.datagrams.readable.getReader())();
 });
 
-console.info("Stream writer worker started");
+console.info("Worker started");

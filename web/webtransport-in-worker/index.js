@@ -18,7 +18,13 @@ export async function run() {
     animationFrameCallback();
     worker.onmessage = (e) => {
         if (e.data.data !== undefined) {
-            common.reportLatency(e.data.data);
+            if (e.data.data instanceof Uint8Array) {
+                const now = common.shortNow();
+                const timestamp = common.timestampFromBuffer(e.data.data);
+                common.reportLatency(now - timestamp);
+            } else {
+                common.reportLatency(e.data.data);
+            }
         } else if (e.data.write !== undefined) {
             common.reportWriteTime(e.data.write);
         } else {

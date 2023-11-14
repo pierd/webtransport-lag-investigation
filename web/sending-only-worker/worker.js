@@ -25,4 +25,4 @@ onmessage = function (e) {
     }
 };
 
-console.info("Stream writer worker started");
+console.info("Worker started");
