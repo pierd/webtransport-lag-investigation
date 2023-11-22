@@ -1,38 +1,6 @@
-[package]
-name = "webtransport-lag-investigation"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = ["client", "server"]
+default-members = ["server"]
+resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-anyhow = "1.0"
-bytes = { version = "1.5.0", features = ["serde"] }
-futures = { version = "0.3", default-features = false, features = ["std"] }
-flume = { version = "0.11", features = ["async"] }
-parking_lot = { version = "0.12", features = ["serde"] }
-quinn = "0.10"
-rustls = { version = "0.21", features = ["quic"] }
-rustls-native-certs = { version = "0.6.2" }
-rustls-pemfile = "1.0"
-tokio = { version = "1", features = [
-    "fs",
-    "macros",
-    "net",
-    "rt-multi-thread",
-    "signal",
-] }
-tokio-util = { version = "0.7", features = ["codec"] }
-tracing = { version = "0.1", features = ["log"] }
-tracing-subscriber = { version = "0.3.17", features = [
-    "env-filter",
-    "time",
-    "local-time",
-    "parking_lot",
-] }
-
-# See: https://github.com/hyperium/h3/pull/183
-h3 = { git = "https://github.com/hyperium/h3" }
-h3-webtransport = { git = "https://github.com/hyperium/h3" }
-h3-quinn = { git = "https://github.com/hyperium/h3" }
-http = { version = "0.2.9" }
+[workspace.dependencies]

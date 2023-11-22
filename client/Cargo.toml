@@ -1,0 +1,29 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+console_error_panic_hook = "0.1.5"
+futures = { version = "0.3", default-features = false, features = ["std"] }
+js-sys = { version = "0.3" }
+serde-wasm-bindgen = { version = "0.6" }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["time"] }
+tracing-web = "0.1"
+time = { version = "0.3", features = ["wasm-bindgen"] }
+wasm-bindgen = { version = "0.2" }
+wasm-bindgen-futures = { version = "0.4" }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "MessageEvent",
+    "Window",
+    "Worker",
+    "WorkerOptions",
+    "WorkerType",
+]
