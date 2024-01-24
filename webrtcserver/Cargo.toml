@@ -1,0 +1,32 @@
+[package]
+name = "webrtcserver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+axum = { version = "0.6", features = ["headers"] }
+bytes = { version = "1.5.0", features = ["serde"] }
+futures = { version = "0.3", default-features = false, features = ["std"] }
+flume = { version = "0.11", features = ["async"] }
+http = "0.2"
+hyper = { version = "0.14", features = ["full"] }
+parking_lot = { version = "0.12", features = ["serde"] }
+tokio = { version = "1", features = [
+    "fs",
+    "macros",
+    "net",
+    "rt-multi-thread",
+    "signal",
+] }
+tokio-util = { version = "0.7", features = ["codec"] }
+tower = "0.4"
+tower-http = { version = "0.3", features = ["cors", "fs", "trace"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3.17", features = [
+    "env-filter",
+    "time",
+    "local-time",
+    "parking_lot",
+] }
+webrtc = "0.9.0"

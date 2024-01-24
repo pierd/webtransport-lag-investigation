@@ -1,5 +1,5 @@
 [workspace]
-members = ["client", "server"]
+members = ["client", "server", "webrtcserver"]
 default-members = ["server"]
 resolver = "2"
 
